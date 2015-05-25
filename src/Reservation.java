@@ -24,7 +24,30 @@ public class Reservation implements Comparable<Reservation>{
 		return period.getStart().compareTo(other.period.getStart());
 	}
 	
-	public static Reservation fromCRes(String cRes){
+	public static Reservation fromCResCreate(String cRes, GregorianCalendar date){
+		String sub = cRes.substring(5, cRes.length()-1);
+		String[] split = sub.split(",");
+		
+		//Raw parse
+		String strColor = split[0].replaceAll("'", "").trim();
+		//String strPeriod = split[1].replaceAll("'", "").trim();
+		//String strUnknown = split[2].replaceAll("'", "").trim();
+		String strPeriodAsStartAndTime = split[3].replaceAll("'", "").trim();
+		
+		//Intermediate
+		String[] timeParts1 = strPeriodAsStartAndTime.split(" ");
+		String[] timeParts2 = timeParts1[0].split(":");
+		int hour = Integer.parseInt(timeParts2[0]);
+		int minute = Integer.parseInt(timeParts2[1]);
+		
+		//Final parse
+		MachineColor color = MachineColor.fromName(strColor);
+		MachinePeriod period = MachinePeriod.fromStartTime(new TimeOfDay(hour, minute));
+		
+		return new Reservation(color, period, date);
+	}
+	
+	public static Reservation fromCResDelete(String cRes){
 		String sub = cRes.substring(5, cRes.length()-1);
 		String[] split = sub.split(",");
 		

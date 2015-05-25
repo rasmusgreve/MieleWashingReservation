@@ -1,6 +1,6 @@
 
 public enum MachineColor {
-	RED("Rød"), BLUE("Bl�"), GREEN("Grøn"), YELLOW("Gul");
+	RED("Rød"), BLUE("Blå"), GREEN("Grøn"), YELLOW("Gul");
 	
 	private final String name;
 	MachineColor(String name){
