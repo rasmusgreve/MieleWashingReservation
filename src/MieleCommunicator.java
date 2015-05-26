@@ -54,46 +54,56 @@ public class MieleCommunicator {
 	}
 	
 	public Collection<Reservation> getReservations() throws IOException, XPathExpressionException, SAXException, ParserConfigurationException{
-		Document doc = getPageDocument("MineReservationer");
-		
-		XPathFactory xPathfactory = XPathFactory.newInstance();
-		XPath xpath = xPathfactory.newXPath();
-		XPathExpression expr = xpath.compile("//table/tbody/tr/td/a[@onclick]");
-		
-		ArrayList<Reservation> reservations = new ArrayList<Reservation>();
-		
-		NodeList res = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
-		for(int i = 0; i < res.getLength();i++){
-			Node n = res.item(i);
-			String onclick = n.getAttributes().getNamedItem("onclick").getTextContent();
-			reservations.add(Reservation.fromCResDelete(onclick));
-		}
-		
+		final ArrayList<Reservation> reservations = new ArrayList<Reservation>();
+		parsePageButtons("MineReservationer", new ButtonParser() {
+			@Override
+			public void parse(String btnTxt) {
+				reservations.add(Reservation.fromCResDelete(btnTxt));
+			}
+		});
 		return reservations;
 	}
 	
-	public Collection<Reservation> getOpenSlots(GregorianCalendar date) throws IOException, SAXException, ParserConfigurationException, XPathExpressionException{
+	public Collection<Reservation> getOpenSlots(final GregorianCalendar date) throws IOException, SAXException, ParserConfigurationException, XPathExpressionException{
 		String urlDate = date.get(GregorianCalendar.YEAR) + "-" + date.get(GregorianCalendar.MONTH) + "-" + date.get(GregorianCalendar.DAY_OF_MONTH);
-		Document doc = getPageDocument("ReserverTid?date=" + urlDate);
-		
-		//System.out.println(toString(doc));
+		final ArrayList<Reservation> slots = new ArrayList<Reservation>();
+		parsePageButtons("ReserverTid?date=" + urlDate, new ButtonParser() {
+			@Override
+			public void parse(String btnTxt) {
+				slots.add(Reservation.fromCResCreate(btnTxt, date));
+			}
+		});
+		return slots;
+	}
+	
+	private interface ButtonParser{
+		void parse(String btnTxt);
+	}
+	
+	private void parsePageButtons(String page, ButtonParser parser)throws IOException, SAXException, ParserConfigurationException, XPathExpressionException{
+		Document doc = getPageDocument(page);
 		
 		XPathFactory xPathfactory = XPathFactory.newInstance();
 		XPath xpath = xPathfactory.newXPath();
 		XPathExpression expr = xpath.compile("//table/tbody/tr/td/a[@onclick]");
 		
-		ArrayList<Reservation> slots = new ArrayList<Reservation>();
-		
 		NodeList res = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
 		for(int i = 0; i < res.getLength();i++){
 			Node n = res.item(i);
 			String onclick = n.getAttributes().getNamedItem("onclick").getTextContent();
-			slots.add(Reservation.fromCResCreate(onclick, date));
+			parser.parse(onclick);
 		}
-		
-		return slots;
 	}
 	
+	public boolean deleteReservation(Reservation toDelete){
+		String page = "ReserverTur?slet=1&lg=0&ly=" + toDelete.getUnknownId() + "&group=" + toDelete.getGroupId();
+		page += "&date=" + toDelete.getYMDDate();
+		page += "&time=" + toDelete.getPeriod().getPeriodString();
+		
+		System.out.println(page);
+		
+		return false;
+	}
 	
 	
 	public static String toString(Document doc) {

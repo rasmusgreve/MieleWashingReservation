@@ -3,9 +3,11 @@ import java.util.GregorianCalendar;
 
 public class Reservation implements Comparable<Reservation>{
 
-	private MachineColor color;
-	private MachinePeriod period;
-	private GregorianCalendar date;
+	private final MachineColor color;
+	private final MachinePeriod period;
+	private final GregorianCalendar date;
+	private int groupId; //Note: this is most likely tied to a machinecolor, but for generality it is stored in the reservation
+	private int unknownId; //Note: probably linked to the location or user
 	
 	public Reservation(MachineColor color, MachinePeriod period, GregorianCalendar date) {
 		this.color = color;
@@ -13,10 +15,19 @@ public class Reservation implements Comparable<Reservation>{
 		this.date = date;
 	}
 	
+	public void setGroupId(int id) {groupId = id;}
+	public int getGroupId() { return groupId;}
+	public void setUnkownId(int id) {unknownId = id;}
+	public int getUnknownId() { return unknownId;}
+	
 	public MachineColor getColor() {return color;}
 	public MachinePeriod getPeriod() {return period;}
 	public GregorianCalendar getDate() {return date;}
 
+	public String getYMDDate(){
+		return date.get(GregorianCalendar.YEAR) + "-" + date.get(GregorianCalendar.MONTH) + "-" + date.get(GregorianCalendar.DAY_OF_MONTH);
+	}
+	
 	@Override
 	public int compareTo(Reservation other) {
 		int dateCompare = this.date.compareTo(other.date);
@@ -31,7 +42,7 @@ public class Reservation implements Comparable<Reservation>{
 		//Raw parse
 		String strColor = split[0].replaceAll("'", "").trim();
 		//String strPeriod = split[1].replaceAll("'", "").trim();
-		//String strUnknown = split[2].replaceAll("'", "").trim();
+		String strGroupId = split[2].replaceAll("'", "").trim();
 		String strPeriodAsStartAndTime = split[3].replaceAll("'", "").trim();
 		
 		//Intermediate
@@ -44,7 +55,11 @@ public class Reservation implements Comparable<Reservation>{
 		MachineColor color = MachineColor.fromName(strColor);
 		MachinePeriod period = MachinePeriod.fromStartTime(new TimeOfDay(hour, minute));
 		
-		return new Reservation(color, period, date);
+		System.out.println(period + " . " + color + ":" + strGroupId);
+		
+		Reservation res = new Reservation(color, period, date);
+		res.setGroupId(Integer.parseInt(strGroupId));
+		return res;
 	}
 	
 	public static Reservation fromCResDelete(String cRes){
@@ -54,10 +69,10 @@ public class Reservation implements Comparable<Reservation>{
 		//Raw parse
 		String strColor = split[0].replaceAll("'", "").trim();
 		//String strPeriod = split[1].replaceAll("'", "").trim();
-		//String strUnknown = split[2].replaceAll("'", "").trim();
+		String strGroupId = split[2].replaceAll("'", "").trim();
 		//String strDate1 = split[3].replaceAll("'", "").trim();
 		String strDate2 = split[4].replaceAll("'", "").trim();
-		//String strUnknownId = split[5].replaceAll("'", "").trim();
+		String strUnknownId = split[5].replaceAll("'", "").trim();
 		String strPeriodAsStartAndTime = split[6].replaceAll("'", "").trim();
 		
 		//Intermediate
@@ -83,7 +98,10 @@ public class Reservation implements Comparable<Reservation>{
 		System.out.println("Time: " + period);
 		*/
 		
-		return new Reservation(color, period, date);
+		Reservation res = new Reservation(color, period, date);
+		res.setGroupId(Integer.parseInt(strGroupId));
+		res.setUnkownId(Integer.parseInt(strUnknownId));
+		return res;
 	}
 
 }

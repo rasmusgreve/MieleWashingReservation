@@ -21,6 +21,10 @@ public enum MachinePeriod{
 	public TimeOfDay getStart() { return start;}
 	public TimeOfDay getEnd() { return end;}
 	public int getDuration() { return duration;}
+	public String getPeriodString(){
+		return start + " +" + end.add(-start.hour, -start.minute);
+	}
+	
 	
 	public static MachinePeriod fromStartTime(TimeOfDay start){
 		for(MachinePeriod p : values()){
