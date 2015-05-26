@@ -25,14 +25,25 @@ public class Main {
 		System.out.println("Current reservations: ");
 		for (Reservation r : mc.getReservations()){
 			System.out.println(r.getYMDDate() + " " + r.getPeriod() + " - " + r.getColor());
-			//System.out.println(mc.deleteReservation(r));
+			if (r.getColor() == MachineColor.BLUE){
+				Thread.sleep(500);
+				boolean res = mc.deleteReservation(r);
+				System.out.println("Deleted blue:" + res);
+			}
 		}
 		
+		System.out.println("Current reservations: ");
+		for (Reservation r : mc.getReservations()){
+			System.out.println(r.getYMDDate() + " " + r.getPeriod() + " - " + r.getColor());
+		
+		}
+		
+		/*
 		System.out.println("Open Slots: ");
-		for (Reservation r : mc.getOpenSlots(new GregorianCalendar(2015, 6, 2))){
+		for (Reservation r : mc.getOpenSlots(new GregorianCalendar(2015, 6-1, 2))){
 			System.out.println(r.getPeriod() + " - " + r.getColor());
 		}
-		
+		*/
 	}
 
 }

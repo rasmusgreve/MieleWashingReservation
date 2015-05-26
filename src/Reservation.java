@@ -25,7 +25,7 @@ public class Reservation implements Comparable<Reservation>{
 	public GregorianCalendar getDate() {return date;}
 
 	public String getYMDDate(){
-		return date.get(GregorianCalendar.YEAR) + "-" + date.get(GregorianCalendar.MONTH) + "-" + date.get(GregorianCalendar.DAY_OF_MONTH);
+		return date.get(GregorianCalendar.YEAR) + "-" + (date.get(GregorianCalendar.MONTH)+1) + "-" + date.get(GregorianCalendar.DAY_OF_MONTH);
 	}
 	
 	@Override
@@ -88,15 +88,8 @@ public class Reservation implements Comparable<Reservation>{
 		
 		//Final parse
 		MachineColor color = MachineColor.fromName(strColor);
-		GregorianCalendar date = new GregorianCalendar(year, month, day);
+		GregorianCalendar date = new GregorianCalendar(year, month-1, day);
 		MachinePeriod period = MachinePeriod.fromStartTime(new TimeOfDay(hour, minute));
-		
-		/*
-		System.out.println("Parsing: " + sub);
-		System.out.println("Color: " + color);
-		System.out.println("Date:" + date.get(GregorianCalendar.YEAR) + " / " + date.get(GregorianCalendar.MONTH) + " / " + date.get(GregorianCalendar.DAY_OF_MONTH));
-		System.out.println("Time: " + period);
-		*/
 		
 		Reservation res = new Reservation(color, period, date);
 		res.setGroupId(Integer.parseInt(strGroupId));

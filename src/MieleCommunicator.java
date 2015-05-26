@@ -38,11 +38,18 @@ public class MieleCommunicator {
 		this.ip = ip;
 	}
 	
+	/**
+	 * Set the credentials to use for communication
+	 */
 	public void setCredentials(String username, String password){
 		String userpass = username + ":" + password;
 		basicAuth = "Basic " + javax.xml.bind.DatatypeConverter.printBase64Binary(userpass.getBytes());
 	}
 	
+	/**
+	 * Test that the credentials works (see {@link #setCredentials(String, String)})
+	 * @return True if the credentials work
+	 */
 	public boolean testCredentials(){
 		try{
 			getPage("");
@@ -53,6 +60,9 @@ public class MieleCommunicator {
 		}
 	}
 	
+	/**
+	 * Get a collection of all the currently made reservations
+	 */
 	public Collection<Reservation> getReservations() throws IOException, XPathExpressionException, SAXException, ParserConfigurationException{
 		final ArrayList<Reservation> reservations = new ArrayList<Reservation>();
 		parsePageButtons("MineReservationer", new ButtonParser() {
@@ -64,8 +74,13 @@ public class MieleCommunicator {
 		return reservations;
 	}
 	
+	/**
+	 * Get a collection of all available machine slots on a given date
+	 * @param date The date to search for available machines on
+	 * @return The collection of available slots
+	 */
 	public Collection<Reservation> getOpenSlots(final GregorianCalendar date) throws IOException, SAXException, ParserConfigurationException, XPathExpressionException{
-		String urlDate = date.get(GregorianCalendar.YEAR) + "-" + date.get(GregorianCalendar.MONTH) + "-" + date.get(GregorianCalendar.DAY_OF_MONTH);
+		String urlDate = date.get(GregorianCalendar.YEAR) + "-" + (date.get(GregorianCalendar.MONTH)+1) + "-" + date.get(GregorianCalendar.DAY_OF_MONTH);
 		final ArrayList<Reservation> slots = new ArrayList<Reservation>();
 		parsePageButtons("ReserverTid?date=" + urlDate, new ButtonParser() {
 			@Override
@@ -95,18 +110,38 @@ public class MieleCommunicator {
 		}
 	}
 	
-	public boolean deleteReservation(Reservation toDelete){
-		String page = "ReserverTur?slet=1&lg=0&ly=" + toDelete.getUnknownId() + "&group=" + toDelete.getGroupId();
+	/**
+	 * Delete a reservation
+	 * @param toDelete The reservation to delete. The reservation should be obtained through the {@link #getReservations()} method
+	 * @return True if the deletion was successful
+	 */
+	public boolean deleteReservation(Reservation toDelete) throws IOException, SAXException, ParserConfigurationException{
+		//?slet=1&lg=0&ly='+arg6+'&date='+arg5+'&time='+arg7+'&group='+arg3
+		String page = "ReserverTur?slet=1&lg=0&ly=" + toDelete.getUnknownId();
 		page += "&date=" + toDelete.getYMDDate();
 		page += "&time=" + toDelete.getPeriod().getPeriodString();
-		
-		System.out.println(page);
+		page += "&group=" + toDelete.getGroupId();
+		///ReserverTur?slet=1&lg=0&ly='+arg6+'&date='+arg5+'&time='+arg7+'&group='+arg3
+		Document doc = getPageDocument(page);
+		System.out.println(toString(doc));
 		
 		return false;
 	}
 	
+	/**
+	 * Make a reservation
+	 * @param toCreate The reservation to create. The reservation should be obtained through the {@link #getOpenSlots(GregorianCalendar)} method
+	 * @return
+	 */
+	public boolean makeReservation(Reservation toCreate){
+		
+		return false;
+	}
 	
-	public static String toString(Document doc) {
+	/*
+	 * Print a XML Document in full. Used for debugging
+	 */
+	private static String toString(Document doc) {
 	    try {
 	        StringWriter sw = new StringWriter();
 	        TransformerFactory tf = TransformerFactory.newInstance();
@@ -135,8 +170,14 @@ public class MieleCommunicator {
 	
 	private InputStream getPage(String path) throws IOException{
 		URL url = new URL("http://" + ip + "/" + path);
+		System.out.println("Getting: " + url);
 		URLConnection urlConnection = url.openConnection();
+		urlConnection.setRequestProperty("Referer", "http:/" + ip + "/MineReservationer&lg=0&ly=9208");
 		urlConnection.setRequestProperty ("Authorization", basicAuth);
+		
+		urlConnection.setRequestProperty ("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+		urlConnection.setRequestProperty ("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.152 Safari/537.36");
+		
 		return urlConnection.getInputStream();
 	}
 
